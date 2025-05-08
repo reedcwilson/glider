@@ -1,0 +1,6 @@
+PyQt5==5.15.9
+PyQtWebEngine==5.15.6
+pynput==1.7.6
+PyYAML==6.0.1
+markdown==3.4.3
+pytest==7.3.1
