@@ -174,8 +174,12 @@ class PresentationWindow(QMainWindow):
     def prompt_for_slides_config(self):
         """Prompt user to select slides.yaml file"""
         try:
+            # Get default directory from config, or use home directory as fallback
+            slides_config = self.app_config.get_slides_config()
+            default_dir = os.path.expanduser(slides_config.get("default_directory", "~"))
+            
             directory = QFileDialog.getExistingDirectory(
-                self, "Select Directory with slides.yaml", os.path.expanduser("~")
+                self, "Select Directory with slides.yaml", default_dir
             )
 
             if directory:

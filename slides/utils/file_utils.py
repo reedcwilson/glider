@@ -7,7 +7,7 @@ import os
 
 def ensure_config_directory():
     """Ensure configuration directory exists"""
-    config_dir = os.path.expanduser("~/.config/slides")
+    config_dir = os.path.expanduser("~/.config/glider")
     if not os.path.exists(config_dir):
         os.makedirs(config_dir)
     return config_dir
@@ -15,7 +15,7 @@ def ensure_config_directory():
 
 def read_file(file_path):
     """Read file content"""
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         return file.read()
 
 
@@ -25,9 +25,9 @@ def write_file(file_path, content):
     directory = os.path.dirname(file_path)
     if directory and not os.path.exists(directory):
         os.makedirs(directory)
-    
+
     # Write content to file
-    with open(file_path, 'w', encoding='utf-8') as file:
+    with open(file_path, "w", encoding="utf-8") as file:
         file.write(content)
 
 

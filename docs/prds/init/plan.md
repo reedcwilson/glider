@@ -27,7 +27,7 @@ Create a Python application that renders markdown files as HTML slides with conf
 
 1. Configuration Management
 
-   - Application-wide configuration will be in a config file in ~/.config/slides/config.json.
+   - Application-wide configuration will be in a config file in ~/.config/glider/config.json.
    - Application config includes global hotkeys for navigation
    - When the application starts, the user should be able to use Finder to navigate to a folder that contains a slides.yaml file.
    - Selecting the folder will trigger the application to load the configuration and start the presentation

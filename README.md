@@ -14,6 +14,7 @@ A Python application that renders markdown files as HTML slides with configurabl
 ## Installation
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/yourusername/slides.git
    cd slides
@@ -27,6 +28,7 @@ A Python application that renders markdown files as HTML slides with configurabl
 ## Usage
 
 1. Run the application:
+
    ```
    python main.py
    ```
@@ -37,7 +39,8 @@ A Python application that renders markdown files as HTML slides with configurabl
 
 ### Global Hotkeys
 
-Default hotkeys (configurable in `~/.config/slides/config.json`):
+Default hotkeys (configurable in `~/.config/glider/config.json`):
+
 - Next slide: `Cmd + Alt + Shift + Right`
 - Previous slide: `Cmd + Alt + Shift + Left`
 
@@ -47,7 +50,7 @@ You can also use the arrow keys or space/backspace for navigation within the app
 
 ### Application Configuration
 
-The application configuration is stored in `~/.config/slides/config.json`:
+The application configuration is stored in `~/.config/glider/config.json`:
 
 ```json
 {

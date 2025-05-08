@@ -20,6 +20,9 @@ class AppConfig:
             "width": 800,
             "height": 600,
             "fullscreen": False
+        },
+        "slides": {
+            "default_directory": "~"
         }
     }
     
@@ -55,6 +58,12 @@ class AppConfig:
         # Update window settings if present
         if 'window' in loaded_config:
             self.config['window'].update(loaded_config['window'])
+            
+        # Update slides settings if present
+        if 'slides' in loaded_config:
+            if 'slides' not in self.config:
+                self.config['slides'] = {}
+            self.config['slides'].update(loaded_config['slides'])
     
     def _create_default_config(self):
         """Create default configuration file"""
@@ -71,3 +80,7 @@ class AppConfig:
     def get_window_config(self):
         """Return window configuration"""
         return self.config.get('window', {})
+        
+    def get_slides_config(self):
+        """Return slides configuration"""
+        return self.config.get('slides', {})
