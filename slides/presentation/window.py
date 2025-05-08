@@ -3,11 +3,11 @@ Main presentation window
 """
 
 import os
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QMainWindow, QFileDialog, QMessageBox, QVBoxLayout, 
     QWidget, QPushButton, QHBoxLayout
 )
-from PyQt5.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize
 from slides.config.slide_config import SlideConfig
 from slides.presentation.slide_view import SlideView
 from slides.markdown.parser import MarkdownParser
@@ -73,12 +73,10 @@ class PresentationWindow(QMainWindow):
     
     def prompt_for_slides_config(self):
         """Prompt user to select slides.yaml file"""
-        options = QFileDialog.Options()
         directory = QFileDialog.getExistingDirectory(
             self,
             "Select Directory with slides.yaml",
-            os.path.expanduser("~"),
-            options=options
+            os.path.expanduser("~")
         )
         
         if directory:
@@ -154,11 +152,11 @@ class PresentationWindow(QMainWindow):
     
     def keyPressEvent(self, event):
         """Handle key press events"""
-        if event.key() == Qt.Key_Right or event.key() == Qt.Key_Space:
+        if event.key() == Qt.Key.Key_Right or event.key() == Qt.Key.Key_Space:
             self.next_slide()
-        elif event.key() == Qt.Key_Left or event.key() == Qt.Key_Backspace:
+        elif event.key() == Qt.Key.Key_Left or event.key() == Qt.Key.Key_Backspace:
             self.previous_slide()
-        elif event.key() == Qt.Key_Escape:
+        elif event.key() == Qt.Key.Key_Escape:
             self.close()
         else:
             super().keyPressEvent(event)

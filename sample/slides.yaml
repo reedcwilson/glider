@@ -1,0 +1,16 @@
+title: "Sample Presentation"
+style:
+  font: "Helvetica"
+  fontSize: 24
+  backgroundColor: "#FFFFFF"
+  textColor: "#000000"
+  justify: "left"
+slides:
+  - path: "slide1.md"
+    style:
+      backgroundColor: "#F0F0F0"
+      justify: "center"
+  - path: "slide2.md"
+  - path: "slide3.md"
+    style:
+      fontSize: 28

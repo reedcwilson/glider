@@ -2,8 +2,8 @@
 Navigation controls for the presentation
 """
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton
-from PyQt5.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton
+from PyQt6.QtCore import pyqtSignal
 
 
 class NavigationControls(QWidget):

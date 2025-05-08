@@ -6,7 +6,7 @@ Entry point for the application
 
 import sys
 import os
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 from slides.config.app_config import AppConfig
 from slides.config.slide_config import SlideConfig
 from slides.presentation.window import PresentationWindow
@@ -46,7 +46,7 @@ def main():
         window.show()
         
         # Clean up on exit
-        exit_code = app.exec_()
+        exit_code = app.exec()
         hotkey_manager.unregister_hotkeys()
         sys.exit(exit_code)
         

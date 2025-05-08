@@ -2,9 +2,9 @@
 Slide display component
 """
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import QUrl
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtCore import QUrl
 
 
 class SlideView(QWidget):
