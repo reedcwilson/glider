@@ -32,23 +32,33 @@ def main():
         # Initialize presentation window
         window = PresentationWindow(app_config)
         
-        # Initialize hotkey manager
-        hotkey_manager = HotkeyManager(app_config)
-        
-        # Set up hotkey handlers
-        hotkey_manager.set_next_handler(window.next_slide)
-        hotkey_manager.set_previous_handler(window.previous_slide)
-        
-        # Register hotkeys
-        hotkey_manager.register_hotkeys()
-        
-        # Show window and start application
-        window.show()
-        
-        # Clean up on exit
-        exit_code = app.exec()
-        hotkey_manager.unregister_hotkeys()
-        sys.exit(exit_code)
+        # Initialize hotkey manager with safe defaults
+        try:
+            # Initialize hotkey manager
+            hotkey_manager = HotkeyManager(app_config)
+            
+            # Set up hotkey handlers
+            hotkey_manager.set_next_handler(window.next_slide)
+            hotkey_manager.set_previous_handler(window.previous_slide)
+            
+            # Register hotkeys
+            hotkey_manager.register_hotkeys()
+            
+            # Clean up on exit (in try block)
+            exit_code = app.exec()
+            try:
+                hotkey_manager.unregister_hotkeys()
+            except:
+                pass  # Ignore errors during cleanup
+            sys.exit(exit_code)
+        except Exception as e:
+            # If hotkey registration fails, continue without hotkeys
+            print(f"Warning: Global hotkeys disabled - {str(e)}")
+            ErrorHandler.handle_hotkey_error(e)
+            
+            # Show window and start application without hotkeys
+            window.show()
+            sys.exit(app.exec())
         
     except Exception as e:
         ErrorHandler.handle_application_error(e)

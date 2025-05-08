@@ -5,9 +5,10 @@ Main presentation window
 import os
 from PyQt6.QtWidgets import (
     QMainWindow, QFileDialog, QMessageBox, QVBoxLayout, 
-    QWidget, QPushButton, QHBoxLayout
+    QWidget, QPushButton, QHBoxLayout, QSizePolicy, QStackedLayout
 )
 from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QColor
 from slides.config.slide_config import SlideConfig
 from slides.presentation.slide_view import SlideView
 from slides.markdown.parser import MarkdownParser
@@ -39,57 +40,126 @@ class PresentationWindow(QMainWindow):
         if window_config.get('fullscreen', False):
             self.showFullScreen()
         
-        # Set up central widget and layout
+        # Set up central widget with stacked layout
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         
+        # Main layout for the central widget
         self.main_layout = QVBoxLayout(self.central_widget)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
         
-        # Create slide view
+        # Create slide view (main content)
         self.slide_view = SlideView(self)
         self.main_layout.addWidget(self.slide_view)
         
-        # Create navigation controls
-        self.create_navigation_controls()
+        # Create overlay for navigation buttons
+        self.create_navigation_overlay()
+        
+        # Show the window before prompting for slides.yaml
+        self.show()
         
         # Prompt for slides.yaml on startup
         self.prompt_for_slides_config()
     
-    def create_navigation_controls(self):
-        """Create navigation buttons"""
-        control_layout = QHBoxLayout()
+    def create_navigation_overlay(self):
+        """Create navigation buttons as an overlay on the content"""
+        # Create container widget that will be positioned over the slide content
+        self.overlay_widget = QWidget(self.central_widget)
+        self.overlay_widget.setObjectName("navigationOverlay")
         
-        # Previous slide button
-        self.prev_button = QPushButton("Previous")
+        # Make the overlay fill the entire central widget
+        self.overlay_widget.setGeometry(self.central_widget.geometry())
+        
+        # Use horizontal layout for the overlay
+        overlay_layout = QHBoxLayout(self.overlay_widget)
+        overlay_layout.setContentsMargins(0, 0, 0, 0)
+        overlay_layout.setSpacing(0)
+        
+        # Previous slide button (left side)
+        self.prev_button = QPushButton("<")
         self.prev_button.clicked.connect(self.previous_slide)
-        control_layout.addWidget(self.prev_button)
+        self.prev_button.setFixedWidth(40)
+        self.prev_button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        self.prev_button.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(0, 0, 0, 15);
+                color: rgba(220, 220, 220, 255);
+                border: none;
+                font-size: 24px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgba(0, 0, 0, 50);
+            }
+            QPushButton:disabled {
+                background-color: rgba(0, 0, 0, 5);
+                color: rgba(180, 180, 180, 50);
+            }
+        """)
         
-        # Next slide button
-        self.next_button = QPushButton("Next")
+        # Spacer to push buttons to the sides
+        overlay_layout.addWidget(self.prev_button)
+        overlay_layout.addStretch(1)
+        
+        # Next slide button (right side)
+        self.next_button = QPushButton(">")
         self.next_button.clicked.connect(self.next_slide)
-        control_layout.addWidget(self.next_button)
+        self.next_button.setFixedWidth(40)
+        self.next_button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        self.next_button.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(0, 0, 0, 15);
+                color: rgba(220, 220, 220, 255);
+                border: none;
+                font-size: 24px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgba(0, 0, 0, 50);
+            }
+            QPushButton:disabled {
+                background-color: rgba(0, 0, 0, 5);
+                color: rgba(180, 180, 180, 50);
+            }
+        """)
+        overlay_layout.addWidget(self.next_button)
         
-        self.main_layout.addLayout(control_layout)
+        # Make sure the overlay stays on top and resizes with the window
+        self.central_widget.resizeEvent = self.resize_overlay
+    
+    def resize_overlay(self, event):
+        """Ensure the overlay resizes with the window"""
+        self.overlay_widget.setGeometry(self.central_widget.rect())
+        # Call the original resize event
+        QWidget.resizeEvent(self.central_widget, event)
     
     def prompt_for_slides_config(self):
         """Prompt user to select slides.yaml file"""
-        directory = QFileDialog.getExistingDirectory(
-            self,
-            "Select Directory with slides.yaml",
-            os.path.expanduser("~")
-        )
-        
-        if directory:
-            yaml_path = os.path.join(directory, "slides.yaml")
-            if os.path.exists(yaml_path):
-                self.load_slides_config(yaml_path)
-            else:
-                QMessageBox.warning(
-                    self,
-                    "File Not Found",
-                    f"slides.yaml not found in {directory}"
-                )
-                self.prompt_for_slides_config()
+        try:
+            directory = QFileDialog.getExistingDirectory(
+                self,
+                "Select Directory with slides.yaml",
+                os.path.expanduser("~")
+            )
+            
+            if directory:
+                yaml_path = os.path.join(directory, "slides.yaml")
+                if os.path.exists(yaml_path):
+                    self.load_slides_config(yaml_path)
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "File Not Found",
+                        f"slides.yaml not found in {directory}"
+                    )
+                    self.prompt_for_slides_config()
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Error selecting directory: {str(e)}"
+            )
     
     def load_slides_config(self, yaml_path):
         """Load slides configuration from YAML file"""

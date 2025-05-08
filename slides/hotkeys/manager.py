@@ -35,13 +35,30 @@ class HotkeyManager:
     def register_hotkeys(self):
         """Register global hotkeys"""
         try:
-            self.listener = keyboard.Listener(
-                on_press=self._on_key_press,
-                on_release=self._on_key_release
-            )
-            self.listener.start()
+            # Check if we're on macOS and handle accordingly
+            import platform
+            if platform.system() == 'Darwin':
+                # On macOS, we'll log a warning but not fail if hotkeys can't be registered
+                try:
+                    self.listener = keyboard.Listener(
+                        on_press=self._on_key_press,
+                        on_release=self._on_key_release,
+                        suppress=False  # Don't suppress events to avoid conflicts
+                    )
+                    self.listener.start()
+                except Exception as e:
+                    ErrorHandler.handle_hotkey_error(e)
+                    print("Warning: Global hotkeys could not be registered. Use in-app navigation instead.")
+            else:
+                # On other platforms, proceed normally
+                self.listener = keyboard.Listener(
+                    on_press=self._on_key_press,
+                    on_release=self._on_key_release
+                )
+                self.listener.start()
         except Exception as e:
             ErrorHandler.handle_hotkey_error(e)
+            print("Warning: Global hotkeys could not be registered. Use in-app navigation instead.")
     
     def unregister_hotkeys(self):
         """Unregister global hotkeys"""
