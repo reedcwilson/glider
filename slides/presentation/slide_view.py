@@ -20,10 +20,10 @@ class SlideView(QWidget):
         
         # Create web view for rendering HTML
         self.web_view = QWebEngineView()
+        self.web_view.setAttribute(Qt.WidgetAttribute.WA_OpaquePaintEvent, False)
         self.web_view.setStyleSheet("""
             QWebEngineView {
-                border-radius: 10px;
-                background-color: transparent;
+                background: transparent;
             }
         """)
         self.layout.addWidget(self.web_view)
