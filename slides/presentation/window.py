@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import (
     QMainWindow, QFileDialog, QMessageBox, QVBoxLayout, 
     QWidget, QPushButton, QHBoxLayout, QSizePolicy, QStackedLayout
 )
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QColor
+from PyQt6.QtCore import Qt, QSize, QPoint
+from PyQt6.QtGui import QColor, QMouseEvent
 from slides.config.slide_config import SlideConfig
 from slides.presentation.slide_view import SlideView
 from slides.markdown.parser import MarkdownParser
@@ -29,6 +29,10 @@ class PresentationWindow(QMainWindow):
         
         self.current_slide_index = 0
         
+        # Variables for window dragging
+        self.dragging = False
+        self.drag_position = None
+        
         # Set up window properties
         window_config = app_config.get_window_config()
         self.setWindowTitle("Markdown Slides")
@@ -36,6 +40,12 @@ class PresentationWindow(QMainWindow):
             window_config.get('width', 800),
             window_config.get('height', 600)
         )
+        
+        # Remove title bar but keep window frame
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        
+        # Set window to be transparent for rounded corners
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
         if window_config.get('fullscreen', False):
             self.showFullScreen()
@@ -55,6 +65,19 @@ class PresentationWindow(QMainWindow):
         
         # Create overlay for navigation buttons
         self.create_navigation_overlay()
+        
+        # Apply rounded corners style
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: white;
+                border-radius: 10px;
+            }
+            QWidget#centralWidget {
+                background-color: white;
+                border-radius: 10px;
+            }
+        """)
+        self.central_widget.setObjectName("centralWidget")
         
         # Show the window before prompting for slides.yaml
         self.show()
@@ -88,6 +111,8 @@ class PresentationWindow(QMainWindow):
                 border: none;
                 font-size: 24px;
                 font-weight: bold;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
             }
             QPushButton:hover {
                 background-color: rgba(0, 0, 0, 50);
@@ -114,6 +139,8 @@ class PresentationWindow(QMainWindow):
                 border: none;
                 font-size: 24px;
                 font-weight: bold;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
             }
             QPushButton:hover {
                 background-color: rgba(0, 0, 0, 50);
@@ -230,3 +257,22 @@ class PresentationWindow(QMainWindow):
             self.close()
         else:
             super().keyPressEvent(event)
+            
+    def mousePressEvent(self, event: QMouseEvent):
+        """Handle mouse press events for window dragging"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.dragging = True
+            self.drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+            
+    def mouseMoveEvent(self, event: QMouseEvent):
+        """Handle mouse move events for window dragging"""
+        if self.dragging and event.buttons() & Qt.MouseButton.LeftButton:
+            self.move(event.globalPosition().toPoint() - self.drag_position)
+            event.accept()
+            
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        """Handle mouse release events for window dragging"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.dragging = False
+            event.accept()
