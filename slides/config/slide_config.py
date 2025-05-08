@@ -4,6 +4,7 @@ Slide configuration handling
 
 import os
 import yaml
+import tempfile
 from slides.utils.error_handler import ErrorHandler
 from slides.utils.file_utils import file_exists, read_file
 
@@ -11,13 +12,40 @@ from slides.utils.file_utils import file_exists, read_file
 class Slide:
     """Represents a single slide"""
     
-    def __init__(self, path, index, style=None):
+    def __init__(self, index, style=None):
         """Initialize a slide object"""
-        self.path = path
         self.index = index
         self.style = style or {}
+        self.path = None
         self.content = None
         self.html = None
+        self.is_temp_file = False
+    
+    def set_path(self, path):
+        """Set the path to the markdown file"""
+        self.path = path
+        self.is_temp_file = False
+    
+    def set_content(self, content):
+        """Set direct markdown content"""
+        self.content = content
+        # Create a temporary file for the content
+        fd, temp_path = tempfile.mkstemp(suffix='.md', prefix=f'slide_{self.index}_')
+        os.close(fd)
+        
+        with open(temp_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        self.path = temp_path
+        self.is_temp_file = True
+    
+    def cleanup(self):
+        """Clean up temporary files if needed"""
+        if self.is_temp_file and self.path and os.path.exists(self.path):
+            try:
+                os.remove(self.path)
+            except Exception as e:
+                ErrorHandler.handle_file_error(e, self.path)
 
 
 class SlideConfig:
@@ -50,11 +78,20 @@ class SlideConfig:
             yaml_content = read_file(yaml_path)
             self.config = yaml.safe_load(yaml_content)
             
+            # Clean up any existing slides
+            self._cleanup_slides()
+            self.slides = []
+            
             # Process slides
             self._process_slides()
             
         except Exception as e:
             ErrorHandler.handle_config_error(e, yaml_path)
+    
+    def _cleanup_slides(self):
+        """Clean up temporary files from slides"""
+        for slide in self.slides:
+            slide.cleanup()
     
     def _process_slides(self):
         """Process slides from configuration"""
@@ -68,20 +105,32 @@ class SlideConfig:
         
         # Process each slide
         for index, slide_data in enumerate(self.config['slides']):
+            style = global_style.copy()
+            
             if isinstance(slide_data, dict):
-                path = slide_data.get('path')
-                style = global_style.copy()
+                # Extract style if present
                 if 'style' in slide_data:
                     style.update(slide_data['style'])
+                
+                # Create slide object
+                slide = Slide(index, style)
+                
+                # Handle path or content
+                if 'path' in slide_data:
+                    # Resolve relative path
+                    full_path = os.path.join(self.base_dir, slide_data['path'])
+                    slide.set_path(full_path)
+                elif 'content' in slide_data:
+                    # Use direct markdown content
+                    slide.set_content(slide_data['content'])
+                else:
+                    raise ValueError(f"Slide {index} must have either 'path' or 'content' defined")
             else:
-                path = slide_data
-                style = global_style.copy()
+                # Simple string path
+                slide = Slide(index, style)
+                full_path = os.path.join(self.base_dir, slide_data)
+                slide.set_path(full_path)
             
-            # Resolve relative path
-            full_path = os.path.join(self.base_dir, path)
-            
-            # Create slide object
-            slide = Slide(full_path, index, style)
             self.slides.append(slide)
     
     def get_slides(self):
@@ -108,3 +157,7 @@ class SlideConfig:
         if 'style' in self.config:
             style.update(self.config['style'])
         return style
+    
+    def __del__(self):
+        """Destructor to clean up temporary files"""
+        self._cleanup_slides()
